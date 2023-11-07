@@ -1,146 +1,62 @@
 !pip install tensorflow
 
-ind=[]
-for x in data:
-  for y in x:
-    ind.append(y)
-
-len(data)
-
 import tensorflow as tf
 import numpy as np
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Embedding, LSTM, Dense
-
-
-
-
 import re
 
 text_data = ind
 
-# Define a custom tokenizer using regular expressions
 def custom_tokenizer(query):
-    # Define a regular expression pattern for the ISODate format
     iso_date_pattern = r"ISODate\('\d{4}-\d{2}-\d{2}'\)"
-
-    # Define a regular expression pattern for the "dd-mm-yyyy" format
     date_pattern = r"\d{2}-\d{2}-\d{4}"
-
-    # Combine both date patterns
     combined_pattern = f"{iso_date_pattern}|{date_pattern}"
-
-    # Tokenize based on spaces and special characters
     tokens = re.findall(r"\S+|[(){}[\],.$'\"']", query)
-
-    # Initialize a list to store the tokenized query
     tokenized_query = []
-
-    # Initialize a flag to identify if we are inside an ISODate
     inside_isodate = False
-
-    # Iterate through tokens
     for token in tokens:
         if re.match(iso_date_pattern, token) or re.match(date_pattern, token):
-            # Tokenize the date components separately
             date_str = token[token.find("(") + 2:token.find(")") - 1]
             date_parts = date_str.split('-')
             tokenized_query.extend(date_parts)
         else:
-            # Split token by dot to tokenize elements like 'db.documents'
             sub_tokens = token.split('.')
             tokenized_query.extend(sub_tokens)
-
     return tokenized_query
 
-# Tokenize the text data
 tokenized_data = [custom_tokenizer(query) for query in text_data]
 
-
-print(tokenized_data)
-
 import numpy as np
 from tensorflow.keras.layers import TextVectorization
-from tensorflow.keras.preprocessing.sequence import pad_sequences
 
-
-
-# Create a TextVectorization layer
 tokenizer = TextVectorization(output_mode="int")
-
-# Flatten the tokenized data and convert it to a NumPy array
 flat_tokenized_data = np.array([word for query in tokenized_data for word in query])
-
-# Fit the tokenizer on your data
 tokenizer.adapt(flat_tokenized_data)
-
-# Tokenize your text data and get token IDs
 token_ids = tokenizer(flat_tokenized_data)
-
-# Reshape token IDs to have uniform length
 token_ids_padded = pad_sequences(token_ids, padding="post")
 
-print(token_ids_padded)
-
-
-print(tokenizer.get_vocabulary())
-
 import numpy as np
-import tensorflow as tf
-from tensorflow.keras.layers import TextVectorization
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
-
-
-# Create a TextVectorization layer with custom standardization and splitting
 tokenizer = TextVectorization(
     output_mode="int",
-    standardize=None,  # Disable standardization
-    split=None,  # Disable splitting
+    standardize=None,
+    split=None,
 )
-
-# Flatten the tokenized data and convert it to a NumPy array
 flat_tokenized_data = np.array([word for query in tokenized_data for word in query])
-
-# Fit the tokenizer on your data
 tokenizer.adapt(flat_tokenized_data)
-
-# Tokenize your text data and get token IDs for a single sequence
 token_ids = tokenizer(flat_tokenized_data)
-
-# Convert the token IDs tensor to a list of lists with one element
 token_ids_list = [token_ids.numpy().tolist()]
-
-# Reshape token IDs to have uniform length using pad_sequences
 token_ids_padded = pad_sequences(token_ids_list, padding="post")
 
-# Print token IDs and vocabulary
-print("Token IDs Padded:")
-print(token_ids_padded)
-
-print("Vocabulary:")
-print(tokenizer.get_vocabulary())
-
-
-
-
-# Assuming you have a TextVectorization object called 'tokenizer'
 token = "11"
 vocabulary = tokenizer.get_vocabulary()
 token_id = vocabulary.index(token)
 print(len(vocabulary))
 print(token_id)
-
-
-
-# Tokenize your text data and get token IDs
-token_ids = tokenizer(flat_tokenized_data)
-
-# Reshape token IDs to have uniform length
-token_ids_padded = pad_sequences(token_ids, padding="post")
-
 
 inp = []
 out = []
@@ -152,104 +68,59 @@ for index, x in enumerate(tokenized_data):
         out.append(x)
 
 print(len(out), len(inp))
-print(inp)
 
+finalinp = []
+finalout = []
 
-finalinp=[]
-finalout=[]
 for x in inp:
-  z=[]
-  for y in x:
-    token = y
-    vocabulary = tokenizer.get_vocabulary()
-    token_id = vocabulary.index(token)
-    z.append(token_id)
-  finalinp.append(z)
+    z = []
+    for y in x:
+        token = y
+        vocabulary = tokenizer.get_vocabulary()
+        token_id = vocabulary.index(token)
+        z.append(token_id)
+    finalinp.append(z)
+
 for x in out:
-  z=[]
-  for y in x:
-    token = y
-    vocabulary = tokenizer.get_vocabulary()
-    token_id = vocabulary.index(token)
-    z.append(token_id)
-  finalout.append(z)
-
-
-
-
-
-print(finalinp)
-
-print(finalout)
+    z = []
+    for y in x:
+        token = y
+        vocabulary = tokenizer.get_vocabulary()
+        token_id = vocabulary.index(token)
+        z.append(token_id)
+    finalout.append(z)
 
 import numpy as np
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
-# Sample tokenized lists (replace with your data)
 tokenized_lists = finalinp
-
-# Define the maximum sequence length you want
 max_seq_length = 15
-
-# Pad the sequences
 padded_sequences = pad_sequences(tokenized_lists, maxlen=max_seq_length, padding='post', truncating='post', value=0)
-
-# 'padding' argument determines where padding is added: 'pre' or 'post'
-# 'truncating' argument determines where to truncate sequences if they exceed maxlen
-
-# Convert the result to a numpy array if needed
 padded_sequences1 = np.array(padded_sequences)
-
-print(padded_sequences1)
-
 
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from tensorflow.keras.utils import to_categorical
 
-# Assuming you have a list of sequences
 sequences = [[1, 2, 3],
              [4, 5, 6, 7],
              [8, 9, 10, 11, 12]]
 
-# Pad the sequences
 padded_sequences = pad_sequences(sequences, padding='post')
-
-# Shift the sequences by one token (word) to the right
-# This will be the target sequences for the model
 shifted_sequences = np.roll(padded_sequences, shift=-1, axis=-1)
-
-# Convert the sequences to one-hot encoded representations
 onehot_sequences = [to_categorical(seq, num_classes=vocab_size) for seq in shifted_sequences]
-
-# Convert to numpy array
 target_sequences = np.array(onehot_sequences)
 
 import numpy as np
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
-# Sample tokenized lists (replace with your data)
 tokenized_lists = finalout
-
-# Define the maximum sequence length you want
 max_seq_length = 15
-
-# Pad the sequences
 padded_sequences = pad_sequences(tokenized_lists, maxlen=max_seq_length, padding='post', truncating='post', value=0)
-
-# 'padding' argument determines where padding is added: 'pre' or 'post'
-# 'truncating' argument determines where to truncate sequences if they exceed maxlen
-
-# Convert the result to a numpy array if needed
 padded_sequences2 = np.array(padded_sequences)
 
-print(padded_sequences2)
-
-print(padded_sequences1[1],padded_sequences2[1])
-
-
+print(padded_sequences1[1], padded_sequences2[1])
 
 padded_sequences1.shape
-
 padded_sequences2.shape
 
 from tensorflow.keras.models import Sequential
@@ -258,7 +129,6 @@ import numpy as np
 
 input_sequences = np.array(padded_sequences1)
 target_sequences = np.array(padded_sequences2)
-
 
 target_sequences_one_hot = tf.keras.utils.to_categorical(target_sequences, num_classes=vocab_size)
 
@@ -270,25 +140,17 @@ vocab_size = 87
 model = Sequential()
 model.add(Embedding(input_dim=vocab_size, output_dim=embedding_dim, input_length=sequence_length))
 model.add(LSTM(hidden_units, return_sequences=True))
-model.add(TimeDistributed(Dense(vocab_size, activation='softmax')))
+model.add(TimeDistributed(Dense(vocab_size, activation='softmax'))
 
 model.compile(optimizer='adam', loss='categorical_crossentropy')
 
 epochs = 100
 model.fit(input_sequences, target_sequences_one_hot, epochs=epochs)
 
-
-
-
-test_sequences = np.array(21 2 12 40 13  3  0  0  0  0  0  0  0  0  0)
-
-predictions = model.predict(test_sequences)
+test_sequences = np.array([21, 2, 12, 40, 13, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0])
 
 predicted_classes = np.argmax(predictions, axis=-1)
 print([predicted_classes])
-
-```
-
 
 input_sequence_for_inference = input_sequences[-1]
 input_sequence_for_inference = tf.expand_dims(input_sequence_for_inference, axis=0)
@@ -296,28 +158,3 @@ predicted_sequence = model.predict(input_sequence_for_inference)
 
 print("Predicted Sequence:")
 print(predicted_sequence)
-
-
-
-for x in inp:
-  z=[]
-  for y in x:
-    token = y
-    vocabulary = tokenizer.get_vocabulary()
-    token_id = vocabulary.index(token)
-    z.append(token_id)
-  finalinp.append(z)
-for x in out:
-  z=[]
-  for y in x:
-    token = y
-    vocabulary = tokenizer.get_vocabulary()
-    token_id = vocabulary.index(token)
-    z.append(token_id)
-  finalout.append(z)
-  vocabulary = tokenizer.get_vocabulary()
-
-
-
-
-
